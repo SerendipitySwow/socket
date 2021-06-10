@@ -43,11 +43,13 @@ interface StreamInterface
     /**
      * Read a single character from the stream.
      *
+     * @param int $length read length
+     *
      * @return string|null Returns a string containing a single character read
      *                     from the stream. Returns NULL on EOF.
      * @throws StreamStateException
      */
-    public function readChar(): ?string;
+    public function readChar(int $length = 65535): ?string;
 
     /**
      * Set timeout period on the stream.

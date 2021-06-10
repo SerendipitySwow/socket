@@ -7,7 +7,6 @@ use SerendipitySwow\Socket\Exceptions\OpenStreamException;
 use SerendipitySwow\Socket\Exceptions\StreamStateException;
 use SerendipitySwow\Socket\Exceptions\WriteStreamException;
 use SerendipitySwow\Socket\Interfaces\StreamInterface;
-use SerendipitySwow\Socket\Protocol\Pack;
 use function error_get_last;
 use function fclose;
 use function fwrite;
@@ -106,7 +105,7 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $bytes = fwrite($this->socket, Pack::pack($string));
+        $bytes = fwrite($this->socket, $string);
         if ($bytes === false) {
             throw new WriteStreamException(error_get_last());
         }
@@ -116,12 +115,12 @@ final class Socket implements StreamInterface
     /**
      * @inheritDoc
      */
-    public function readChar(): ?string
+    public function readChar(int $length = 65535): ?string
     {
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $char = fread($this->socket, Pack::length(fread($this->socket, 2)));
+        $char = fread($this->socket, $length);
         if ($char === false) {
             return null;
         }
