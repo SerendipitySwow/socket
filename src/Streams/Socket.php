@@ -31,9 +31,9 @@ final class Socket implements StreamInterface
     private int $port;
 
     /**
-     * @var float Connection timeout
+     * @var int Connection timeout
      */
-    private float $connectionTimeout;
+    private int $connectionTimeout;
 
     /**
      * @var resource
@@ -45,9 +45,9 @@ final class Socket implements StreamInterface
      *
      * @param string $host The hostname.
      * @param int $port The port number.
-     * @param null|float $connectionTimeout
+     * @param null|int $connectionTimeout
      */
-    public function __construct(string $host, int $port, float $connectionTimeout = null)
+    public function __construct(string $host, int $port, int $connectionTimeout = null)
     {
         $this->host = $host;
         $this->port = $port;
@@ -82,8 +82,8 @@ final class Socket implements StreamInterface
         if (!is_resource($socket)) {
             throw new OpenStreamException($errstr, $errno);
         }
-        $this->setTimeout($this->connectionTimeout, 5);
         $this->socket = $socket;
+        $this->setTimeout($this->connectionTimeout, 5);
     }
 
     /**
@@ -105,7 +105,7 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $bytes = fwrite($this->socket, $string);
+        $bytes = fwrite($this->socket, $string, strlen($string));
         if ($bytes === false) {
             throw new WriteStreamException(error_get_last());
         }
@@ -121,7 +121,7 @@ final class Socket implements StreamInterface
             throw new StreamStateException('Stream not opened.');
         }
         $char = fread($this->socket, $length);
-        if ($char === false) {
+        if ($char === false || $char === '') {
             return null;
         }
         return $char;
