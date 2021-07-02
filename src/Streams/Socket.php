@@ -20,17 +20,17 @@ final class Socket implements StreamInterface
     /**
      * Default connection timeout in seconds.
      */
-    public const DEFAULT_CONNECTION_TIMEOUT = 5;
+    public const DEFAULT_CONNECTION_TIMEOUT = 5 * 1000;
 
     /**
      * Default write timeout in seconds.
      */
-    public const DEFAULT_WRITE_TIMEOUT = 5;
+    public const DEFAULT_WRITE_TIMEOUT = 5 * 1000;
 
     /**
      * Default read timeout in seconds.
      */
-    public const DEFAULT_READ_TIMEOUT = 5;
+    public const DEFAULT_READ_TIMEOUT = 5 * 1000;
 
     /**
      * @var string Hostname/IP
@@ -57,7 +57,7 @@ final class Socket implements StreamInterface
      */
     private int $readTimeout;
 
-    private ?SwowSocket $socket;
+    private ?SwowSocket $socket = null;
 
     private ?Buffer $buffer;
 
@@ -70,10 +70,9 @@ final class Socket implements StreamInterface
     ) {
         $this->host = $host;
         $this->port = $port;
-        $this->connectionTimeout = $connectionTimeout ?: self::DEFAULT_CONNECTION_TIMEOUT;
-        $this->writeTimeout = $writeTimeout ?: self::DEFAULT_WRITE_TIMEOUT;
-        $this->readTimeout = $readTimeout ?: self::DEFAULT_READ_TIMEOUT;
-        $this->buffer = new Buffer();
+        $this->connectionTimeout = (int) $connectionTimeout * 1000 ?: self::DEFAULT_CONNECTION_TIMEOUT;
+        $this->writeTimeout = (int) $writeTimeout * 1000 ?: self::DEFAULT_WRITE_TIMEOUT;
+        $this->readTimeout = (int) $readTimeout * 1000 ?: self::DEFAULT_READ_TIMEOUT;
     }
 
     /**
@@ -86,7 +85,7 @@ final class Socket implements StreamInterface
 
     public function isOpen(): bool
     {
-        return $this->socket->isEstablished();
+        return $this->socket?->isEstablished() ?? false;
     }
 
     /**
@@ -116,7 +115,6 @@ final class Socket implements StreamInterface
         if ($this->isOpen()) {
             $this->socket->close();
             $this->socket = null;
-            $this->buffer = null;
         }
     }
 
@@ -125,9 +123,7 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-
-        $this->socket->send($this->buffer->clear()
-            ->write($string, strlen($string)));
+        $this->socket->sendString($string, strlen($string));
     }
 
     public function readChar(int $length = 65535): ?string
@@ -135,8 +131,7 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $this->socket->read($this->buffer->clear(), $length);
-        $char = $this->buffer->toString();
+        $char = $this->socket->readString($length);
         if ($char === '') {
             return null;
         }
