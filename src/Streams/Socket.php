@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 
-namespace Serendipity\Job\Kernel;
+namespace SerendipitySwow\Socket\Streams;
 
 use SerendipitySwow\Socket\Exceptions\OpenStreamException;
 use SerendipitySwow\Socket\Exceptions\StreamStateException;
