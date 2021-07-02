@@ -1,17 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace SerendipitySwow\Socket\Streams;
+
+namespace Serendipity\Job\Kernel;
 
 use SerendipitySwow\Socket\Exceptions\OpenStreamException;
 use SerendipitySwow\Socket\Exceptions\StreamStateException;
-use SerendipitySwow\Socket\Exceptions\WriteStreamException;
 use SerendipitySwow\Socket\Interfaces\StreamInterface;
-use function error_get_last;
-use function fclose;
-use function fwrite;
-use function is_resource;
-use function stream_set_timeout;
+use Swow\Buffer;
+use Swow\Socket as SwowSocket;
+use Throwable;
 
 final class Socket implements StreamInterface
 {
@@ -19,6 +17,15 @@ final class Socket implements StreamInterface
      * Default connection timeout in seconds.
      */
     public const DEFAULT_CONNECTION_TIMEOUT = 5;
+    /**
+     * Default write timeout in seconds.
+     */
+    public const DEFAULT_WRITE_TIMEOUT = 5;
+
+    /**
+     * Default read timeout in seconds.
+     */
+    public const DEFAULT_READ_TIMEOUT = 5;
 
     /**
      * @var string Hostname/IP
@@ -34,24 +41,39 @@ final class Socket implements StreamInterface
      * @var int Connection timeout
      */
     private int $connectionTimeout;
+    /**
+     * @var int Write timeout
+     */
+    private int $writeTimeout;
+    /**
+     * @var int Read timeout
+     */
+    private int $readTimeout;
 
     /**
-     * @var resource
+     * @var SwowSocket|null
      */
-    private $socket;
+    private ?SwowSocket $socket;
 
     /**
-     * Create a TCP socket.
-     *
-     * @param string $host The hostname.
-     * @param int $port The port number.
-     * @param null|int $connectionTimeout
+     * @var Buffer|null
      */
-    public function __construct(string $host, int $port, int $connectionTimeout = null)
+    private ?Buffer $buffer;
+
+    public function __construct(
+        string $host,
+        int $port,
+        int $connectionTimeout = null,
+        int $writeTimeout = null,
+        int $readTimeout = null
+    )
     {
         $this->host = $host;
         $this->port = $port;
         $this->connectionTimeout = $connectionTimeout ?: self::DEFAULT_CONNECTION_TIMEOUT;
+        $this->writeTimeout = $writeTimeout ?: self::DEFAULT_WRITE_TIMEOUT;
+        $this->readTimeout = $readTimeout ?: self::DEFAULT_READ_TIMEOUT;
+        $this->buffer = new Buffer();
     }
 
     /**
@@ -63,90 +85,73 @@ final class Socket implements StreamInterface
     }
 
     /**
-     * @inheritDoc
+     * @return bool
      */
     public function isOpen(): bool
     {
-        return is_resource($this->socket);
+        return $this->socket->isEstablished();
     }
 
     /**
-     * @inheritDoc
+     * @throws Throwable
      */
     public function open(): void
     {
         if ($this->isOpen()) {
             throw new StreamStateException('Stream already opened.');
         }
-        $socket = @stream_socket_client(sprintf('tcp://%s:%s', $this->host, $this->port), $errno, $errstr, 1);
-        if (!is_resource($socket)) {
-            throw new OpenStreamException($errstr, $errno);
+        try {
+            $socket = new SwowSocket(SwowSocket::TYPE_TCP);
+            if (!$socket) {
+                throw new OpenStreamException('Stream UnKnown#');
+            }
+            $this->socket = $socket;
+            $this->socket->connect($this->host, $this->port, $this->connectionTimeout);
+            $this->writeTimeout && $this->socket->setWriteTimeout($this->writeTimeout);
+            $this->readTimeout && $this->socket->setReadTimeout($this->readTimeout);
+        } catch (Throwable $throwable) {
+            throw $throwable;
         }
-        $this->socket = $socket;
-        $this->setTimeout($this->connectionTimeout, 5);
+
     }
 
-    /**
-     * @inheritDoc
-     */
     public function close(): void
     {
         if ($this->isOpen()) {
-            fclose($this->socket);
+            $this->socket->close();
             $this->socket = null;
+            $this->buffer = null;
         }
     }
 
     /**
-     * @inheritDoc
+     * @param string $string
      */
-    public function write(string $string): int
+    public function write(string $string): void
     {
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $bytes = fwrite($this->socket, $string, strlen($string));
-        if ($bytes === false) {
-            throw new WriteStreamException(error_get_last());
-        }
-        return $bytes;
+
+        $this->socket->send($this->buffer->clear()
+            ->write($string, strlen($string)));
     }
 
     /**
-     * @inheritDoc
+     * @param int $length
+     *
+     * @return string|null
      */
     public function readChar(int $length = 65535): ?string
     {
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $char = fread($this->socket, $length);
-        if ($char === false || $char === '') {
+        $this->socket->read($this->buffer->clear(), $length);
+        $char = $this->buffer->toString();
+        if ($char === '') {
             return null;
         }
         return $char;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setTimeout(int $seconds, int $microseconds): bool
-    {
-        if (!$this->isOpen()) {
-            throw new StreamStateException('Stream not opened.');
-        }
-        return stream_set_timeout($this->socket, $seconds, $microseconds);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function timedOut(): bool
-    {
-        if (!$this->isOpen()) {
-            throw new StreamStateException('Stream not opened.');
-        }
-        $metadata = stream_get_meta_data($this->socket);
-        return (bool)$metadata['timed_out'];
     }
 }
