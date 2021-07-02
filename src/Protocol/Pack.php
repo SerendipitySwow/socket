@@ -1,4 +1,9 @@
 <?php
+/**
+ * This file is part of Serendipity Job
+ * @license  https://github.com/serendipitySwow/Serendipity-job/blob/main/LICENSE
+ */
+
 declare(strict_types=1);
 
 namespace SerendipitySwow\Socket\Protocol;
@@ -7,10 +12,6 @@ class Pack
 {
     /**
      *Process the sent message
-     *
-     * @param string $data
-     *
-     * @return string
      */
     public static function pack(string $data): string
     {
@@ -19,10 +20,6 @@ class Pack
 
     /**
      * Get message length
-     *
-     * @param string $head
-     *
-     * @return int
      */
     public static function length(string $head): int
     {

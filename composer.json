@@ -24,7 +24,8 @@
     "ext-sockets": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^9.5"
+    "phpunit/phpunit": "^9.5",
+    "friendsofphp/php-cs-fixer": "^3.0"
   },
   "autoload": {
     "psr-4": {
@@ -35,6 +36,9 @@
     "psr-4": {
       "SerendipitySwowTest\\Socket\\": "tests/"
     }
+  },
+  "scripts": {
+    "cs-fix": [ "@php vendor/bin/php-cs-fixer fix" ]
   },
   "support": {
     "pull-request": "https://github.com/SerendipitySwow/socket/pulls",

@@ -1,4 +1,9 @@
 <?php
+/**
+ * This file is part of Serendipity Job
+ * @license  https://github.com/serendipitySwow/Serendipity-job/blob/main/LICENSE
+ */
+
 declare(strict_types=1);
 
 namespace SerendipitySwow\Socket\Interfaces;
@@ -11,8 +16,6 @@ interface StreamInterface
 {
     /**
      * Has the stream already been opened?
-     *
-     * @return bool
      */
     public function isOpen(): bool;
 
@@ -32,7 +35,7 @@ interface StreamInterface
     /**
      * Writes the contents of the string to the stream.
      *
-     * @param string $string The string that is to be written.
+     * @param string $string the string that is to be written
      *
      * @throws StreamStateException
      * @throws WriteStreamException
@@ -44,9 +47,9 @@ interface StreamInterface
      *
      * @param int $length read length
      *
-     * @return string|null Returns a string containing a single character read
-     *                     from the stream. Returns NULL on EOF.
      * @throws StreamStateException
+     * @return null|string Returns a string containing a single character read
+     *                     from the stream. Returns NULL on EOF.
      */
     public function readChar(int $length = 65535): ?string;
 }

@@ -1,6 +1,10 @@
 <?php
-declare(strict_types=1);
+/**
+ * This file is part of Serendipity Job
+ * @license  https://github.com/serendipitySwow/Serendipity-job/blob/main/LICENSE
+ */
 
+declare(strict_types=1);
 
 namespace SerendipitySwow\Socket\Streams;
 
@@ -17,6 +21,7 @@ final class Socket implements StreamInterface
      * Default connection timeout in seconds.
      */
     public const DEFAULT_CONNECTION_TIMEOUT = 5;
+
     /**
      * Default write timeout in seconds.
      */
@@ -41,23 +46,19 @@ final class Socket implements StreamInterface
      * @var int Connection timeout
      */
     private int $connectionTimeout;
+
     /**
      * @var int Write timeout
      */
     private int $writeTimeout;
+
     /**
      * @var int Read timeout
      */
     private int $readTimeout;
 
-    /**
-     * @var SwowSocket|null
-     */
     private ?SwowSocket $socket;
 
-    /**
-     * @var Buffer|null
-     */
     private ?Buffer $buffer;
 
     public function __construct(
@@ -66,8 +67,7 @@ final class Socket implements StreamInterface
         int $connectionTimeout = null,
         int $writeTimeout = null,
         int $readTimeout = null
-    )
-    {
+    ) {
         $this->host = $host;
         $this->port = $port;
         $this->connectionTimeout = $connectionTimeout ?: self::DEFAULT_CONNECTION_TIMEOUT;
@@ -84,9 +84,6 @@ final class Socket implements StreamInterface
         $this->close();
     }
 
-    /**
-     * @return bool
-     */
     public function isOpen(): bool
     {
         return $this->socket->isEstablished();
@@ -112,7 +109,6 @@ final class Socket implements StreamInterface
         } catch (Throwable $throwable) {
             throw $throwable;
         }
-
     }
 
     public function close(): void
@@ -124,9 +120,6 @@ final class Socket implements StreamInterface
         }
     }
 
-    /**
-     * @param string $string
-     */
     public function write(string $string): void
     {
         if (!$this->isOpen()) {
@@ -137,11 +130,6 @@ final class Socket implements StreamInterface
             ->write($string, strlen($string)));
     }
 
-    /**
-     * @param int $length
-     *
-     * @return string|null
-     */
     public function readChar(int $length = 65535): ?string
     {
         if (!$this->isOpen()) {
@@ -152,6 +140,7 @@ final class Socket implements StreamInterface
         if ($char === '') {
             return null;
         }
+
         return $char;
     }
 }
