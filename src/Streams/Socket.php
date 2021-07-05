@@ -11,7 +11,6 @@ namespace SerendipitySwow\Socket\Streams;
 use SerendipitySwow\Socket\Exceptions\OpenStreamException;
 use SerendipitySwow\Socket\Exceptions\StreamStateException;
 use SerendipitySwow\Socket\Interfaces\StreamInterface;
-use Swow\Buffer;
 use Swow\Socket as SwowSocket;
 use Throwable;
 
@@ -30,7 +29,7 @@ final class Socket implements StreamInterface
     /**
      * Default read timeout in seconds.
      */
-    public const DEFAULT_READ_TIMEOUT = 5 * 1000;
+    public const DEFAULT_READ_TIMEOUT = -1;
 
     /**
      * @var string Hostname/IP
@@ -59,8 +58,6 @@ final class Socket implements StreamInterface
 
     private ?SwowSocket $socket = null;
 
-    private ?Buffer $buffer;
-
     public function __construct(
         string $host,
         int $port,
@@ -70,9 +67,9 @@ final class Socket implements StreamInterface
     ) {
         $this->host = $host;
         $this->port = $port;
-        $this->connectionTimeout = (int) $connectionTimeout * 1000 ?: self::DEFAULT_CONNECTION_TIMEOUT;
-        $this->writeTimeout = (int) $writeTimeout * 1000 ?: self::DEFAULT_WRITE_TIMEOUT;
-        $this->readTimeout = (int) $readTimeout * 1000 ?: self::DEFAULT_READ_TIMEOUT;
+        $this->connectionTimeout = $connectionTimeout ?: self::DEFAULT_CONNECTION_TIMEOUT;
+        $this->writeTimeout = $writeTimeout ?: self::DEFAULT_WRITE_TIMEOUT;
+        $this->readTimeout = $readTimeout ?: self::DEFAULT_READ_TIMEOUT;
     }
 
     /**
@@ -85,7 +82,7 @@ final class Socket implements StreamInterface
 
     public function isOpen(): bool
     {
-        return $this->socket?->isEstablished() ?? false;
+        return (bool) $this->socket?->isEstablished();
     }
 
     /**
@@ -123,15 +120,16 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
+
         $this->socket->sendString($string, strlen($string));
     }
 
-    public function readChar(int $length = 65535): ?string
+    public function readChar(int $length = null): ?string
     {
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $char = $this->socket->readString($length);
+        $char = $this->socket->recvString($length);
         if ($char === '') {
             return null;
         }
