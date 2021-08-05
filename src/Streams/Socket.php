@@ -121,7 +121,7 @@ final class Socket implements StreamInterface
             throw new StreamStateException('Stream not opened.');
         }
 
-        $this->socket->sendString($string, strlen($string));
+        $this->socket->sendString($string);
     }
 
     public function readChar(int $length = null): ?string
