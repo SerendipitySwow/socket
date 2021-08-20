@@ -8,8 +8,9 @@ declare(strict_types=1);
 
 namespace SerendipitySwow\Socket\Streams;
 
-use SerendipitySwow\Socket\Exceptions\OpenStreamException;
+use SerendipitySwow\Socket\Exceptions\ReadException;
 use SerendipitySwow\Socket\Exceptions\StreamStateException;
+use SerendipitySwow\Socket\Exceptions\WriteStreamException;
 use SerendipitySwow\Socket\Interfaces\StreamInterface;
 use Swow\Socket as SwowSocket;
 use Throwable;
@@ -93,18 +94,11 @@ final class Socket implements StreamInterface
         if ($this->isOpen()) {
             throw new StreamStateException('Stream already opened.');
         }
-        try {
-            $socket = new SwowSocket(SwowSocket::TYPE_TCP);
-            if (!$socket) {
-                throw new OpenStreamException('Stream UnKnown#');
-            }
-            $this->socket = $socket;
-            $this->socket->connect($this->host, $this->port, $this->connectionTimeout);
-            $this->writeTimeout && $this->socket->setWriteTimeout($this->writeTimeout);
-            $this->readTimeout && $this->socket->setReadTimeout($this->readTimeout);
-        } catch (Throwable $throwable) {
-            throw $throwable;
-        }
+        $socket = new SwowSocket(SwowSocket::TYPE_TCP);
+        $this->socket = $socket;
+        $this->socket->connect($this->host, $this->port, $this->connectionTimeout);
+        $this->writeTimeout && $this->socket->setWriteTimeout($this->writeTimeout);
+        $this->readTimeout && $this->socket->setReadTimeout($this->readTimeout);
     }
 
     public function close(): void
@@ -120,8 +114,16 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-
-        $this->socket->sendString($string);
+        try {
+            $this->socket->sendString($string);
+        } catch (Throwable $throwable) {
+            throw new WriteStreamException(sprintf(
+                'SwowSocket An error occurred while writing to the socket error:%s in:[%d] file:%s',
+                $throwable->getMessage(),
+                $throwable->getLine(),
+                $throwable->getFile()
+            ));
+        }
     }
 
     public function readChar(int $length = null): ?string
@@ -129,11 +131,20 @@ final class Socket implements StreamInterface
         if (!$this->isOpen()) {
             throw new StreamStateException('Stream not opened.');
         }
-        $char = $this->socket->recvString($length);
-        if ($char === '') {
-            return null;
-        }
+        try {
+            $char = $this->socket->recvString($length);
+            if ($char === '') {
+                return null;
+            }
 
-        return $char;
+            return $char;
+        } catch (Throwable $throwable) {
+            throw new ReadException(sprintf(
+                'SwowSocket An error occurred while reading the socket error:%s in:[%d] file:%s ',
+                $throwable->getMessage(),
+                $throwable->getLine(),
+                $throwable->getFile()
+            ));
+        }
     }
 }
