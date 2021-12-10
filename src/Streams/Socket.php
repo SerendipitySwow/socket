@@ -132,7 +132,7 @@ final class Socket implements StreamInterface
             throw new StreamStateException('Stream not opened.');
         }
         try {
-            $char = $this->socket->recvString($length);
+            $char = $this->socket->recvString($length === null ? \Swow\Buffer::DEFAULT_SIZE : $length);
             if ($char === '') {
                 return null;
             }
