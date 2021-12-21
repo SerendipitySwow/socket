@@ -29,12 +29,12 @@
   },
   "autoload": {
     "psr-4": {
-      "SerendipitySwow\\Socket\\": "src/"
+      "SwowCloud\\Socket\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "SerendipitySwowTest\\Socket\\": "tests/"
+      "SwowCloud\\SocketTest\\": "tests/"
     }
   },
   "scripts": {
