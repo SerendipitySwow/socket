@@ -1,18 +1,18 @@
 <?php
 /**
  * This file is part of Serendipity Job
- * @license  https://github.com/serendipitySwow/Serendipity-job/blob/main/LICENSE
+ * @license  https://github.com/swow-cloud/socket/blob/main/LICENSE
  */
 
 declare(strict_types=1);
 
-namespace SerendipitySwow\Socket\Streams;
+namespace SwowCloud\Socket\Streams;
 
-use SerendipitySwow\Socket\Exceptions\ReadException;
-use SerendipitySwow\Socket\Exceptions\StreamStateException;
-use SerendipitySwow\Socket\Exceptions\WriteStreamException;
-use SerendipitySwow\Socket\Interfaces\StreamInterface;
 use Swow\Socket as SwowSocket;
+use SwowCloud\Socket\Exceptions\ReadException;
+use SwowCloud\Socket\Exceptions\StreamStateException;
+use SwowCloud\Socket\Exceptions\WriteStreamException;
+use SwowCloud\Socket\Interfaces\StreamInterface;
 use Throwable;
 
 final class Socket implements StreamInterface

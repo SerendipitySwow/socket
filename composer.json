@@ -1,5 +1,5 @@
 {
-  "name": "serendipity-swow/sockets",
+  "name": "swow-cloud/sockets",
   "type": "library",
   "description": "Development of nsq client based on swow",
   "keywords": [
@@ -41,7 +41,7 @@
     "cs-fix": [ "@php vendor/bin/php-cs-fixer fix" ]
   },
   "support": {
-    "pull-request": "https://github.com/SerendipitySwow/socket/pulls",
-    "issues": "https://github.com/SerendipitySwow/socket/issues"
+    "pull-request": "https://github.com/swow-cloud/socket/pulls",
+    "issues": "https://github.com/swow-cloud/socket/issues"
   }
 }

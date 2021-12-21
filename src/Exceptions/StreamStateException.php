@@ -1,12 +1,12 @@
 <?php
 /**
  * This file is part of Serendipity Job
- * @license  https://github.com/serendipitySwow/Serendipity-job/blob/main/LICENSE
+ * @license  https://github.com/swow-cloud/socket/blob/main/LICENSE
  */
 
 declare(strict_types=1);
 
-namespace SerendipitySwow\Socket\Exceptions;
+namespace SwowCloud\Socket\Exceptions;
 
 class StreamStateException extends LogicException
 {
